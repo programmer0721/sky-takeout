@@ -1,3 +1,1 @@
-新增公共字段自动填充功能：通过自定义注解 @AutoFill 标记 Mapper 层 insert/update 方法，
-由 AOP 切面在执行前统一填充 create_time/update_time/create_user/update_user，
-消除了 Service 层重复的公共字段赋值代码。
+新增阿里云 OSS 文件上传功能,先在阿里云完成账号实名认证并开通对象存储 OSS，创建了位于华北2（北京）的公共读 Bucket（lhz-sky-takeout，本地冗余+标准存储），并创建 AccessKey 用于程序鉴权；项目原本已引入 aliyun-sdk-oss 依赖并自带 AliOssProperties（绑定 sky.alioss 配置）和 AliOssUtil 上传工具类，因此在 application-dev.yml 中填写 endpoint、AccessKey 和 bucket-name 四项配置后，新增 OssConfiguration 配置类将 AliOssUtil 交给 Spring 容器管理，并在 CommonController 的 upload 方法中注入该对象，对上传文件取后缀并用 UUID 生成对象名，调用 aliOssUtil.upload 完成上传，返回可直接访问的图片 URL

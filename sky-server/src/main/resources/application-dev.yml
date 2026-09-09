@@ -6,3 +6,8 @@ sky:
     database: sky_take_out
     username: root
     password: root
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:你的AccessKeyId}
+    access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:你的AccessKeySecret}
+    bucket-name: lhz-sky-takeout
