@@ -2,9 +2,11 @@ package com.sky.controller.admin;
 
 import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
+import com.sky.entity.Dish;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.DishService;
+import com.sky.vo.DishVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -47,5 +49,38 @@ public class DishController {
     public Result deleteBatch(@RequestParam("ids") List<Long> dishIds){
         dishService.deleteDishById(dishIds);
         return Result.success();
+    }
+
+    //根据id查询菜品
+    @ApiOperation("根据id查询菜品")
+    @GetMapping("/{id}")
+    public Result<DishVO> getDishWithFlavorById(@PathVariable Long id){
+        log.info("根据id查询菜品:{}",id);
+        DishVO dishVO = dishService.getDishWithFlavorById(id);
+        return Result.success(dishVO);
+    }
+
+    //修改菜品
+    @ApiOperation("修改菜品")
+    @PutMapping
+    public Result updateDishWithFlavor(@RequestBody DishDTO dishDTO){
+        dishService.updateDishWithFlavor(dishDTO);
+        return Result.success();
+    }
+
+    //更改菜品售卖状态
+    @ApiOperation("更改菜品售卖状态")
+    @PostMapping("/status/{status}")
+    public Result startOrStop(@PathVariable Integer status,Long id){
+        dishService.startOrStop(status,id);
+        return Result.success();
+    }
+
+    //根据分类id查询菜品
+    @ApiOperation("根据分类id查询菜品")
+    @GetMapping("/list")
+    public Result<List<Dish>> getDishByCategoryId(Integer categoryId){
+        List<Dish> list=dishService.getDishByCategoryId(categoryId);
+        return Result.success(list);
     }
 }

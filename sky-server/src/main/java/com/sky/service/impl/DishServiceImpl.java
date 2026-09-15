@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.util.List;
 import java.util.Objects;
 
@@ -97,6 +98,52 @@ public class DishServiceImpl implements DishService {
 
         //根据菜品id集合批量删除口味数据 delete from dish_flavor where dish_id in (...)
         dishFlavorMapper.deleteByDishIds(dishIds);
+    }
+
+
+    //根据id查询菜品
+    public DishVO getDishWithFlavorById(Long id) {
+        Dish dish=dishMapper.getDishById(id);
+        List<DishFlavor> dishFlavors=dishFlavorMapper.getDishFlavorsByDishId(id);
+        DishVO dishVO=new DishVO();
+        BeanUtils.copyProperties(dish,dishVO);
+        dishVO.setFlavors(dishFlavors);
+        return dishVO;
+    }
+
+    //修改菜品
+    @Transactional
+    public void updateDishWithFlavor(DishDTO dishDTO) {
+        Dish dish=new Dish();
+        BeanUtils.copyProperties(dishDTO,dish);
+        dishMapper.updateDish(dish);
+        //删除关联的口味数据
+        dishFlavorMapper.deleteByDishId(dishDTO.getId());
+        //重新批量插入口味数据
+        List<DishFlavor> dishFlavors=dishDTO.getFlavors();
+        if(dishFlavors !=null && !dishFlavors.isEmpty()){
+            dishFlavors.forEach(flavor ->{
+                flavor.setDishId(dishDTO.getId());
+            });
+            dishFlavorMapper.insertBatch(dishFlavors);
+        }
+    }
+
+    //更改菜品售卖状态
+    public void startOrStop(Integer status, Long id) {
+        Dish dish = Dish.builder()
+                .id(id)
+                .status(status)
+                .build();
+        dishMapper.updateDish(dish);
+    }
+
+    //根据分类id查询菜品
+    public List<Dish> getDishByCategoryId(Integer categoryId) {
+
+        List<Dish> list = dishMapper.getDishByCategoryId(categoryId);
+
+        return list;
     }
 
 }
