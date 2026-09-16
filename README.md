@@ -1,3 +1,1 @@
-新增套餐功能（含套餐菜品关系）：提供 POST /admin/setmeal 接口，用 @RequestBody 接收 SetmealDTO（套餐信息 + setmealDishes 菜品列表）；Service 的 saveSetmealWithDish 加 @Transactional，先把 DTO 拷成 Setmeal 实体写入 setmeal 表（useGeneratedKeys 回填主键，公共字段由 @AutoFill 切面填），拿到 id 后给每条关系补 setmeal_id，再用 SetmealDishMapper.insertBatch 一条 `<foreach>` SQL 批量写 setmeal_dish；踩过的坑：dish_id 要取 #{sd.dishId} 而不是 #{sd.id}（关系表主键，新增时前端不传），该列允许 NULL，写错不报错只会静默存 NULL，关联直接失效
-
-套餐分页查询功能：提供 GET /admin/setmeal/page 接口，Controller 用 SetmealPageQueryDTO 接收 page、pageSize、name、categoryId、status；Service 先 PageHelper.startPage 分页再调 SetmealMapper.setmealPageQuery，用 PageResult 返回总记录数和当前页数据；XML 用 setmeal 左连接 category 取套餐信息，c.name as categoryName 映射到 SetmealVO，`<where>` 配三个 `<if>` 实现名称模糊、分类、状态的动态条件，按 create_time 倒序，写法与菜品分页查询同构
+完成了套餐管理业务功能开发

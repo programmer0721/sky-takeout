@@ -31,4 +31,19 @@ public interface SetmealMapper {
 
     //套餐分页查询
     Page<SetmealVO> setmealPageQuery(SetmealPageQueryDTO setmealPageQueryDTO);
+
+    //根据套餐id查询套餐
+    @Select("select * from setmeal where id = #{id}")
+    Setmeal getSetmealById(Long id);
+
+    //根据套餐id查询套餐内未启售菜品的数量
+    @Select("select count(*) from setmeal_dish sd left join dish d on d.id = sd.dish_id where sd.setmeal_id = #{id} and d.status = 0")
+    Integer countDisabledDishBySetmealId(Long id);
+
+    //根据套餐id集合批量删除套餐数据
+    void deleteByIds(List<Long> ids);
+
+    //修改套餐
+    @AutoFill(value = OperationType.UPDATE)
+    void updateSetmeal(Setmeal setmeal);
 }
