@@ -1,1 +1,5 @@
-完成了套餐管理业务功能开发
+Redis 接入与 RedisTemplate 配置：spring-boot-starter-data-redis 依赖已经在 sky-server 的 pom 里，不用自己加；application.yml 里把 spring.redis 的 host/port/password/database 全写成 ${sky.redis.*} 占位，真实值放 application-dev.yml（localhost:6379、database 10），和数据源、阿里 OSS 的配置套路保持一致；RedisConfiguration 注册 RedisTemplate bean——入参注入 Spring Boot 自动配置好的 RedisConnectionFactory（地址、密码、库号自动带上），再把 key 的序列化器显式换成 StringRedisSerializer，这样 redis-cli 里看到的是可读的 SHOP_STATUS 而不是二进制乱码（value 仍沿用默认的 JDK 序列化）
+
+店铺营业状态功能：管理端 ShopController 提供 PUT /admin/shop/{status} 设置状态和 GET /admin/shop/status 查询状态，用户端 ShopController 只提供 GET /user/shop/status 供前端判断是否打烊；营业状态是单值数据，不用建表也不用 mapper，直接以 SHOP_STATUS 为 key 存进 Redis，1 表示营业中、0 表示打烊中，读写都走 RedisTemplate.opsForValue()；因为两个包下的类名都叫 ShopController，用 @RestController("adminShopController") 和 @RestController("userShopController") 显式指定 bean 名称，否则两个同名 bean 会让容器启动失败；管理端这组接口走 /admin/** 的 JWT 拦截器，用户端那组不登录也能访问
+
+knife4j 接口文档分组：WebMvcConfiguration 里把原来单个 docket 拆成两个——docket1 只扫 com.sky.controller.admin，docket2 只扫 com.sky.controller.user 并用 groupName("用户端接口") 命名，这样 doc.html 顶部就能在管理端/用户端两组文档之间切换；每个 docket 里都补了一条日志，启动时能看到文档插件有没有初始化
