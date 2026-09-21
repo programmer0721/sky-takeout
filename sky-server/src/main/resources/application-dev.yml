@@ -16,3 +16,6 @@ sky:
     access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:你的AccessKeyId}
     access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:你的AccessKeySecret}
     bucket-name: lhz-sky-takeout
+  wechat:
+    appid: wx370244f29690e07e
+    secret: fcba8dca17525cff1702b0e7614bfc0f
