@@ -49,4 +49,7 @@ public interface DishMapper {
     //根据分类id查询菜品
     @Select("select * from dish where category_id = #{categoryId} and status = 1")
     List<Dish> getDishByCategoryId(Integer categoryId);
+
+    //条件查询菜品（C端商品浏览）
+    List<Dish> list(Dish dish);
 }

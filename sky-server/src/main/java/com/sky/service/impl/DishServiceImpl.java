@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.ArrayList;
 
 @Service
 public class DishServiceImpl implements DishService {
@@ -144,6 +145,26 @@ public class DishServiceImpl implements DishService {
         List<Dish> list = dishMapper.getDishByCategoryId(categoryId);
 
         return list;
+    }
+
+    //条件查询菜品和口味（C端商品浏览）
+    public List<DishVO> listWithFlavor(Dish dish) {
+        List<Dish> dishList = dishMapper.list(dish);
+
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (Dish d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d, dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishFlavorMapper.getDishFlavorsByDishId(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
     }
 
 }
