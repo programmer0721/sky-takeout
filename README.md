@@ -1,26 +1,35 @@
+## 地址簿管理（C 端）
 
-## 购物车相关接口（C 端）
+地址簿是直接导入的现成代码，一套重复度很高的增删改查，所以这里不记手写过程。接口在
+AddressBookController 里，前缀 /user/addressBook：GET /list 查当前用户全部地址，POST 新增，
+GET /{id} 按 id 查，PUT 修改，PUT /default 设默认地址，DELETE 按 id 删除（id 走查询参数），
+GET /default 查默认地址。除了设默认地址，其余都是把条件直接透给 mapper。
 
-购物车接口在 ShoppingCartController 里，统一前缀 /user/shoppingCart，一共四个：新增商品是
-POST /add，查看购物车是 GET /list，商品数量减一是 POST /sub，清空购物车是 DELETE /clean。
-请求体都是 ShoppingCartDTO，只有 dishId、setmealId、dishFlavor 三个字段，菜品和套餐二选一，
-dishFlavor 只有菜品才带。
+setDefault 在一个事务里做两步：先把当前用户所有地址的 is_default 改成 0，再把目标地址改成 1，
+这样任何时刻最多只有一条默认地址，只做第二步就会出多条默认地址。list 和 save 会从
+BaseContext 取当前登录用户，但导入的这套代码没做归属校验，getById、update、deleteById 都只按
+主键操作，拿到别人的地址 id 就能改或删别人的地址，要严谨得在 service 里补一次 userId 比对。
 
-用户身份不从请求里取，四个接口都用 BaseContext.getCurrentId()：add、list、sub 在 service 里
-把 userId 覆盖成当前登录用户，clean 直接把 userId 传进 where，所以只能读到自己那一条。
-整个 /user/** 都注册了 JwtTokenUserInterceptor，没带 C 端令牌会返回 401。
+## 订单（C 端）
 
-购物车里存的是快照。name、image、amount 在加入购物车时从 dish 或 setmeal 表里取一次写死，
-之后菜品改价不影响车里已有的数据，结算时按库里最新价重新算是订单模块的事；价格取库里的
-dish.price 或 setmeal.price，不由前端传。
+订单这块目前只做了下单和支付两个接口，都在 OrderController 里，前缀 /user/order，
+POST /submit 下单，PUT /payment 支付。下单的 orderSubmit 打了 @Transactional：先用
+addressBookId 查地址簿，查不到抛 AddressBookBusinessException，再按当前用户查购物车，
+空的话抛 ShoppingCartBusinessException；然后组装订单落 orders 表，订单号用
+System.currentTimeMillis()，状态写待付款 1、支付状态写未支付 0，收货人、电话、详细地址这三个
+字段用地址簿里的值覆盖前端传的；接着把购物车每一条按字段名拷进 OrderDetail，补上 orderId 后
+批量插入 order_detail，最后清空该用户的购物车，返回订单 id、订单号、金额、下单时间。
+金额直接用前端传的 amount，服务端没有重算，正式环境应该在这里按购物车自己算一遍。
 
-add 是先查、有则加、无则插：按 userId 加 dishId/setmealId/dishFlavor 查一次，查到就把 number 加一
-（updateNumberById 只更新 number 一个字段），查不到才查出名称、图片、单价，写 number 为 1 和 createTime
-后插入。查询条件在 ShoppingCartMapper.xml 里用 if 动态拼，只有非 null 的字段才进 where，
-别名的生效依赖 type-aliases-package 配了 com.sky.entity。
+支付没有接真实的微信支付。WeChatPayUtil 是走 /v3/pay/transactions/jsapi 下单、再签名给
+小程序唤起收银台的，需要商户号、商户私钥和平台证书，个人开发者申请不到商户号，所以这段调用
+整段注释掉了，只留了一个 log 再调 paySuccess，直接按支付成功处理。注释里保留了原来的写法
+（按 userId 查 User 取 openid、调 weChatPayUtil.pay 生成预支付交易单、判断返回的 code 是不是
+ORDERPAID），以后拿到商户号把注释放开、把证书和 sky.wechat 配置补齐就能用；UserMapper 新增的
+getUserById 和 OrderServiceImpl 里注入的 WeChatPayUtil 就是给它预留的，目前只有注释里的代码在引用。
 
-几个边界要注意。dishFlavor 传 null 时查询条件会退化成只按 dishId 匹配，可能把“微辣”那条当成
-同一条商品去累加数量，前端对同一菜品要保持一致；dishId 和 setmealId 同时为 null 时会走到
-getSetmealById(null) 再取名称，直接空指针；add 和 sub 都是先查后写，没有并发控制，
-同一用户快速重复点击有丢更新的风险；shopping_cart 的 user_id 建议加索引，
-clean 是删除当前用户的全部数据，写 SQL 时别漏 where。
+paySuccess 按订单号查出订单，把 status 改成待接单 2、payStatus 改成已支付 1、checkoutTime 写当前
+时间，靠 OrderMapper.update 的动态 set 只更新传进去的非 null 字段。几个要注意的点：payment
+没有校验订单是否存在和当前状态，订单号传错会直接空指针；OrdersPaymentDTO 里的 payMethod 没落库，
+订单的 pay_method 一直是空的；用户端的订单查询、取消、再来一单和管理端的接单、拒单、派送、完成、
+统计都还没写。
