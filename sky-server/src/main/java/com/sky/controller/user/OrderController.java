@@ -3,7 +3,6 @@ package com.sky.controller.user;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
-import com.sky.entity.Orders;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -16,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController("userOrderController")
 @RequestMapping("/user/order")
@@ -51,6 +49,7 @@ public class OrderController {
         return Result.success(orderPaymentVO);
     }
 
+    //历史订单分页查询
     @GetMapping("/historyOrders")
     @ApiOperation("历史订单分页查询")
     public Result<PageResult> pageQuery(OrdersPageQueryDTO ordersPageQueryDTO){
@@ -59,6 +58,7 @@ public class OrderController {
         return Result.success(pageResult);
     }
 
+    //查询订单详情
     @GetMapping("/orderDetail/{id}")
     @ApiOperation("查询订单详情")
     public Result<OrderVO> getOrderDetailByOrderId(@PathVariable("id") Long id){
