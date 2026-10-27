@@ -4,6 +4,8 @@ import com.sky.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.time.LocalDateTime;
+
 @Mapper
 public interface UserMapper {
 
@@ -17,4 +19,7 @@ public interface UserMapper {
     //根据用户id查询用户
     @Select("select * from user where id = #{id}")
     User getUserById(Long id);
+
+    //统计时间区间内用户的数量
+    Double getUserMessageByTime(LocalDateTime beginTime, LocalDateTime endTime);
 }
