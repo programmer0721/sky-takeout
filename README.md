@@ -1,1 +1,1 @@
-统计报表接口位于 `ReportController`，均接收 `begin` 和 `end` 两个日期参数（格式 `yyyy-MM-dd`）：`GET /admin/report/turnoverStatistics` 返回每日营业额，`GET /admin/report/userStatistics` 返回每日新增用户数和累计用户数，`GET /admin/report/ordersStatistics` 返回每日总订单数、有效订单数、区间汇总及订单完成率（范围 0～1，前端负责转换为百分比）。
+完成了统计销量前十商品代码开发

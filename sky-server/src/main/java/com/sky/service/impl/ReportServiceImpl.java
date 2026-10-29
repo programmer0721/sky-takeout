@@ -1,10 +1,12 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import org.apache.commons.lang.StringUtils;
@@ -119,6 +121,27 @@ public class ReportServiceImpl implements ReportService {
                 .totalOrderCount((int)totalOrderCount)
                 .validOrderCount((int)validOrderCount)
                 .orderCompletionRate(orderCompletionRate)
+                .build();
+    }
+
+    //获取指定时间区间内销量前十商品
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+        //销量前十商品列表
+        List<GoodsSalesDTO> salesTop10List = new ArrayList<>();
+        //获取时间区间内销量前十商品，放入列表
+        LocalDateTime beginTime = LocalDateTime.of(begin,LocalTime.MIN);
+        LocalDateTime endTime = LocalDateTime.of(end,LocalTime.MAX);
+        salesTop10List = orderMapper.getSalesTop10(beginTime,endTime);
+        //从列表取出商品名称和销量，分别放入商品名称列表，销量列表，放入VO返回
+        List<String> nameList = new ArrayList<>();
+        List<Integer> numberList = new ArrayList<>();
+        for(GoodsSalesDTO good : salesTop10List){
+            nameList.add(good.getName());
+            numberList.add(good.getNumber());
+        }
+        return SalesTop10ReportVO.builder()
+                .nameList(StringUtils.join(nameList,","))
+                .numberList(StringUtils.join(numberList,","))
                 .build();
     }
 }
