@@ -1,1 +1,1 @@
-完成了统计销量前十商品代码开发
+工作台接口位于 `WorkSpaceController`：`GET /admin/workspace/businessData` 返回今日营业额、有效订单数、订单完成率、平均客单价和新增用户数，`GET /admin/workspace/overviewOrders` 返回今日待接单、待派送、已完成、已取消及全部订单数，`GET /admin/workspace/overviewDishes` 和 `GET /admin/workspace/overviewSetmeals` 分别返回菜品、套餐的在售和停售数量。
