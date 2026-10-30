@@ -48,6 +48,7 @@ public class WorkSpaceServiceImpl implements WorkSpaceService {
         map.put("endTime",end);
         map.put("status", Orders.COMPLETED);
         Double turnover = orderMapper.getTurnOverByMap(map);
+        turnover = turnover == null ? 0.0 : turnover;
 
         Double validOrderCount = orderMapper.getOrdersMessageByTimeAndStatus(begin,end,Orders.COMPLETED);
 
